@@ -10,17 +10,17 @@ rm -rf node_modules
 
 # Installa tutte le dipendenze
 echo "Installing dependencies..."
-npm install
+NODE_ENV=development npm install
 
-# Installa vite e typescript globalmente
-echo "Installing global dependencies..."
-npm install -g vite typescript @vitejs/plugin-react
+# Genera il client Prisma
+echo "Generating Prisma client..."
+npx prisma generate
 
 # Build del frontend
 echo "Building frontend..."
-npx tsc
-npx vite build
+NODE_ENV=production npx tsc
+NODE_ENV=production npx vite build
 
 # Build del backend
 echo "Building backend..."
-npx tsc -p tsconfig.server.json
+NODE_ENV=production npx tsc -p tsconfig.server.json
