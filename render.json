@@ -1,0 +1,17 @@
+{
+    "name": "barbershop",
+    "env": {
+        "NODE_ENV": "production"
+    },
+    "build": {
+        "env": {
+            "NODE_ENV": "production"
+        }
+    },
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/dist/server/express-server.js"
+        }
+    ]
+}

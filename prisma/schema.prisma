@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modello Utente
+model Utente {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  nome          String
+  cognome       String
+  telefono      String?
+  fotoProfilo   String?
+  genere        Genere        @default(M)
+  punti         Int           @default(0)
+  ruolo         RuoloUtente   @default(CLIENTE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  prenotazioni  Prenotazione[]
+  recensioni    Recensione[]
+  tokenReset    TokenReset?
+  barbiere      Barbiere?
+  notifiche     Notifica[]    // Relazione con le notifiche
+}
+
+// Token per il reset della password
+model TokenReset {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  scadenza  DateTime
+  utente    Utente    @relation(fields: [utenteId], references: [id], onDelete: Cascade)
+  utenteId  String    @unique
+}
+
+// Modello Barbiere (estende Utente con ruolo BARBIERE)
+model Barbiere {
+  id            String         @id @default(cuid())
+  utenteId      String        @unique
+  utente        Utente        @relation(fields: [utenteId], references: [id])
+  specialita    Json          // Array JSON in PostgreSQL
+  descrizione   String?       @db.Text
+  prenotazioni  Prenotazione[]
+  orariLavoro   OrarioLavoro[]
+  recensioni    Recensione[]  @relation("BarbiereRecensioni")
+}
+
+// Enumerazione per il genere dell'utente
+enum Genere {
+  M
+  F
+  ALTRO
+}
+
+// Enumerazione per il ruolo dell'utente
+enum RuoloUtente {
+  ADMIN
+  BARBIERE
+  CLIENTE
+}
+
+// Modello Servizio
+model Servizio {
+  id          String       @id @default(cuid())
+  nome        String
+  descrizione String?      @db.Text
+  prezzo      Decimal      @db.Decimal(10, 2)
+  durata      Int         // Durata in minuti
+  immagine    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  prenotazioniServizi PrenotazioneServizio[]
+  attivo      Boolean     @default(true)
+}
+
+// Modello Prenotazione
+model Prenotazione {
+  id          String       @id @default(cuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  utenteId    String
+  utente      Utente      @relation(fields: [utenteId], references: [id])
+  barbiereId  String
+  barbiere    Barbiere    @relation(fields: [barbiereId], references: [id])
+  servizi     PrenotazioneServizio[]
+  note        String?     @db.Text
+  dataOra     DateTime
+  stato       StatoPrenotazione @default(PENDING)
+  recensione  Recensione?
+}
+
+// Tabella di collegamento tra Prenotazione e Servizio
+model PrenotazioneServizio {
+  id            String      @id @default(cuid())
+  prenotazione  Prenotazione @relation(fields: [prenotazioneId], references: [id])
+  prenotazioneId String
+  servizio      Servizio    @relation(fields: [servizioId], references: [id])
+  servizioId    String
+
+  @@unique([prenotazioneId, servizioId])
+}
+
+// Enumerazione per lo stato della prenotazione
+enum StatoPrenotazione {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+// Modello Recensione
+model Recensione {
+  id            String      @id @default(cuid())
+  prenotazione  Prenotazione @relation(fields: [prenotazioneId], references: [id])
+  prenotazioneId String     @unique
+  utente        Utente     @relation(fields: [utenteId], references: [id])
+  utenteId      String
+  barbiere      Barbiere   @relation("BarbiereRecensioni", fields: [barbiereId], references: [id])
+  barbiereId    String
+  valutazione   Int        @db.SmallInt
+  commento      String?    @db.Text
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+// Modello OrarioLavoro per i barbieri
+model OrarioLavoro {
+  id          String    @id @default(cuid())
+  giorno      Int       // 0-6 (domenica-sabato)
+  oraInizio   String    // formato HH:mm
+  oraFine     String    // formato HH:mm
+  barbiere    Barbiere  @relation(fields: [barbiereId], references: [id])
+  barbiereId  String
+}
+
+// Modello Notifica
+model Notifica {
+  id        String    @id @default(cuid())
+  titolo    String
+  messaggio String    @db.Text
+  letta     Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  utente    Utente    @relation(fields: [utenteId], references: [id])
+  utenteId  String
+}
