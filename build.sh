@@ -4,22 +4,23 @@
 echo "Cleaning npm cache..."
 npm cache clean --force
 
-# Installa vite globalmente prima di tutto
-echo "Installing vite globally..."
-npm install -g vite
+# Rimuovi node_modules se esiste
+echo "Removing node_modules..."
+rm -rf node_modules
 
-# Installa le dipendenze di sviluppo prima
-echo "Installing dev dependencies..."
-npm install --only=dev
+# Installa tutte le dipendenze
+echo "Installing dependencies..."
+npm install
 
-# Installa le dipendenze di produzione
-echo "Installing production dependencies..."
-npm install --only=prod
+# Installa vite e typescript globalmente
+echo "Installing global dependencies..."
+npm install -g vite typescript @vitejs/plugin-react
 
-# Genera il client Prisma
-echo "Generating Prisma client..."
-npx prisma generate
+# Build del frontend
+echo "Building frontend..."
+npx tsc
+npx vite build
 
-# Build del progetto
-echo "Building project..."
-npm run build:full
+# Build del backend
+echo "Building backend..."
+npx tsc -p tsconfig.server.json
