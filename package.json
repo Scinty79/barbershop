@@ -7,12 +7,12 @@
     "seed": "tsx prisma/seed.ts"
   },
   "scripts": {
-    "frontend": "./node_modules/.bin/vite",
-    "backend": "./node_modules/.bin/tsx watch src/server/express-server.ts",
+    "frontend": "npx vite",
+    "backend": "npx tsx watch src/server/express-server.ts",
     "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
-    "build": "./node_modules/.bin/tsc && ./node_modules/.bin/vite build",
+    "build": "npx tsc && npx vite build",
     "start": "node dist/server/express-server.js",
-    "build:server": "./node_modules/.bin/tsc -p tsconfig.server.json",
+    "build:server": "npx tsc -p tsconfig.server.json",
     "build:full": "npm run build && npm run build:server",
     "postinstall": "prisma generate"
   },
